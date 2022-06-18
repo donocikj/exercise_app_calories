@@ -1,23 +1,34 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views import View
+from .models import Meal
+import json
+
 
 # Create your views here.
 def home(req):
     """ Renders (/sends) home page of the calories app """
     return HttpResponse('<h1>calories app home</h1>')
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class MealsViewAggregate(View):
     """ View class to handle meal list related requests """
     def get(self, request):
         """ GET: retrieve list of meals from the database """
-        return JsonResponse({"message":"get all meals called"})
+
+        return JsonResponse({"Meals":[meal.serialize() for meal in Meal.objects.all()]})
 
     def post(self, request):
         """ POST: add meal(s) to the database """
-        return JsonResponse({"message":"post new meal(s) called"})
+        
+        for meal in json.loads(request.body.decode("utf-8")).get("meals"):
+            Meal.objects.create(name=meal.get("name"), calories=meal.get("calories")).save()
 
+        return JsonResponse({"message" : "submitted meals"})
+
+@method_decorator(csrf_exempt, name='dispatch')
 class MealsViewPiecemeal(View):
     """ View class to handle requests related to infividual meals: """
 

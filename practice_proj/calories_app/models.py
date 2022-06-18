@@ -8,3 +8,6 @@ class Meal(models.Model):
     name = models.CharField(max_length=100)
     calories = models.FloatField()
     date = models.DateField(default=timezone.now)
+
+    def serialize(self):
+        return { "name" : self.name, "calories" : self.calories, "date" : self.date.isoformat()}
